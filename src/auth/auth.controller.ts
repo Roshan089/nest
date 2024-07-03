@@ -11,7 +11,7 @@ export class AuthController {
       dto,
     });
 
-    return this.authService.signup();
+    return this.authService.signup(dto);
   }
 
   @Post('signin')
