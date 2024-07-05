@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { dot } from 'node:test/reporters';
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService) {}
@@ -31,7 +32,14 @@ export class AuthService {
     }
   }
 
-  signin() {
-    return { mes: 'i  have sign in ' };
+  async signin(dto: AuthDto) {
+    //find user by email
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+    //if user doesnot exist throw exception
+    if (!user) throw new ForbiddenException('credentail incorrect');
   }
 }
