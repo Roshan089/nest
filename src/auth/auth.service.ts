@@ -41,5 +41,13 @@ export class AuthService {
     });
     //if user doesnot exist throw exception
     if (!user) throw new ForbiddenException('credentail incorrect');
+
+    const pwMatch = await argon.verify(user.hash, dto.password);
+    //if password doesnot match
+    if (!pwMatch) throw new ForbiddenException('credentail incorrect');
+
+    //send back the user
+    delete user.hash;
+    return user;
   }
 }
