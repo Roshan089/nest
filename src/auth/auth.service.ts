@@ -5,9 +5,16 @@ import { AuthDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { dot } from 'node:test/reporters';
+import { JwtService } from '@nestjs/jwt';
+import { config } from 'node:process';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
   async signup(dto: AuthDto) {
     try {
       //generate password  hash
@@ -20,9 +27,8 @@ export class AuthService {
           hash,
         },
       });
-      delete user.hash;
 
-      return user;
+      return this.signToken(user.id, user.email);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -47,7 +53,19 @@ export class AuthService {
     if (!pwMatch) throw new ForbiddenException('credentail incorrect');
 
     //send back the user
-    delete user.hash;
-    return user;
+
+    return this.signToken(user.id, user.email);
+  }
+
+  signToken(userId: number, email: string): Promise<string> {
+    const payLoad = {
+      sub: userId,
+      email,
+    };
+    const secret = this.config.get('JWT_SECRET');
+    return this.jwt.signAsync(payLoad, {
+      expiresIn: '15m',
+      secret: secret,
+    });
   }
 }
