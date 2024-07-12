@@ -9,7 +9,7 @@ import { JwtGuard } from 'src/auth/guard';
 export class UserController {
   @UseGuards(JwtGuard)
   @Get('me')
-  getme(@GetUser('id') user: User, @GetUser('email') email: String) {
+  getme(@GetUser('id') user: User) {
     //console.log(email);
 
     return user;
